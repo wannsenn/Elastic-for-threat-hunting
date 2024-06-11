@@ -1,0 +1,20 @@
+# Detects PowerShell scripts that have the capability of dumping Kerberos tickets from LSA, 
+# which potentially indicates an attacker's attempt to acquire credentials for lateral movement.
+# ref https://github.com/MzHmO/PowershellKerberos/blob/main/dumper.ps1
+# 
+# index patterns : winlogbeat, log-windows.powershell*
+#
+# custom query
+
+event.category:process and host.os.type:windows and
+  powershell.file.script_block_text : (
+    "LsaCallAuthenticationPackage" and
+    (
+      "KerbRetrieveEncodedTicketMessage" or
+      "KerbQueryTicketCacheMessage" or
+      "KerbQueryTicketCacheExMessage" or
+      "KerbQueryTicketCacheEx2Message" or
+      "KerbRetrieveTicketMessage" or
+      "KerbDecryptDataMessage"
+    )
+  )
